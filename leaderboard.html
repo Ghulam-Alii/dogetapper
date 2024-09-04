@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaderboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+        }
+
+        .leaderboard-container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: linear-gradient(145deg, #1e1e1e, #2a2a2a);
+            border-radius: 10px;
+            box-shadow: 5px 5px 10px #171717, -5px -5px 10px #333;
+            text-align: center;
+        }
+
+        .leaderboard-header {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .leaderboard-info {
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+
+        .leaderboard-table-container {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .leaderboard-table th, .leaderboard-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #333;
+        }
+
+        .leaderboard-table th {
+            background-color: #333;
+        }
+
+        .leaderboard-table td {
+            background-color: #2a2a2a;
+        }
+
+        .user-card {
+            background: #444;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: left;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .user-card h3 {
+            margin: 5px 0;
+        }
+
+        .user-card i {
+            margin-right: 10px;
+        }
+
+        .icon-container {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            font-size: 30px;
+        }
+        .secondary-navbar {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background-color: #1e1e1e;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            box-shadow: 0 -5px 10px #171717;
+        }
+
+        .nav-item {
+            text-align: center;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .nav-item a {
+            color: #fff;
+            font-size: 24px;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+       
+
+        .nav-item span {
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="heading-container">
+        <div class="company-heading">
+            <img src="doge.webp" alt="Logo">
+            DogeTapper
+        </div>
+    </div>
+   
+    <div class="leaderboard-container">
+        <div class="user-card" id="currentUserCard">
+            <div>
+                <i class="fas fa-user"></i>
+                <h3>Your Position: <span id="userRank">N/A</span></h3>
+                <p><i class="fas fa-mouse-pointer"></i> Total Clicks: <span id="userClicks">0</span></p>
+            </div>
+            <div class="icon-container">
+                <i class="fas fa-crown"></i>
+            </div>
+        </div>
+
+        <div class="leaderboard-header">Leaderboard</div>
+        <div class="leaderboard-info">
+            <i class="fas fa-users"></i> Total Users: <span id="totalUsers">0</span> | 
+            <i class="fas fa-mouse-pointer"></i> Total Clicks: <span id="totalClicks">0</span>
+        </div>
+
+        <div class="leaderboard-table-container">
+            <table class="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Username</th>
+                        <th>Total Clicks</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard">
+                    <!-- Top users will be populated here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+     <!-- Secondary navigation bar -->
+     <div class="secondary-navbar">
+        <div class="nav-item ">
+            <a href="dashboard.html"><i class="fas fa-home"></i></a>
+            <span>Dashboard</span>
+        </div>
+        <div class="nav-item">
+            <a href="boost.html"><i class="fas fa-rocket"></i></a>
+            <span>Boost</span>
+        </div>
+        <div class="nav-item">
+            <a href="tasks.html"><i class="fas fa-tasks"></i></a>
+            <span>Tasks</span>
+        </div>
+
+        <div class="nav-item">
+            <a href="referrals.html"><i class="fas fa-users"></i></a>
+            <span>Referrals</span>
+        </div>
+
+        <div class="nav-item active" >
+            <a href="leaderboard.html" class="active"><i class="fas fa-trophy"></i></a>
+            <span>Leaders</span>
+        </div>
+    </div>
+
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-app.js";
+        import { getDatabase, ref, get, child, onValue } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-database.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCryq8IXZV6S8yvPYVlltsSKvCHsoRzxeE",
+            authDomain: "clickdoge-f88a8.firebaseapp.com",
+            projectId: "clickdoge-f88a8",
+            storageBucket: "clickdoge-f88a8.appspot.com",
+            messagingSenderId: "962113343161",
+            appId: "1:962113343161:web:5003e98f3c77371fad1568"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
+
+        let currentUserId;
+
+        // Function to load leaderboard data
+        function loadLeaderboard() {
+            const usersRef = ref(db, 'users');
+            get(usersRef).then((snapshot) => {
+                if (snapshot.exists()) {
+                    const usersData = snapshot.val();
+                    let usersArray = [];
+
+                    let totalClicks = 0;
+                    let totalUsers = 0;
+
+                    // Create array of users with their click data
+                    Object.keys(usersData).forEach((userId) => {
+                        usersArray.push({
+                            username: usersData[userId].username || 'Unknown',
+                            clicks: usersData[userId].clickCount || 0,
+                            userId: userId
+                        });
+                        totalClicks += usersData[userId].clickCount || 0;
+                        totalUsers++;
+                    });
+
+                    // Sort users by clicks (descending)
+                    usersArray.sort((a, b) => b.clicks - a.clicks);
+
+                    // Update total users and total clicks
+                    document.getElementById('totalUsers').textContent = totalUsers;
+                    document.getElementById('totalClicks').textContent = totalClicks;
+
+                    // Populate leaderboard table
+                    const leaderboard = document.getElementById('leaderboard');
+                    leaderboard.innerHTML = '';
+
+                    let userRank = 'N/A';
+                    let userClicks = 0;
+
+                    usersArray.forEach((user, index) => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `<td>${index + 1}</td><td>${user.username}</td><td>${user.clicks}</td>`;
+                        leaderboard.appendChild(row);
+
+                        // If the current user matches, update their card
+                        if (user.userId === currentUserId) {
+                            userRank = index + 1;
+                            userClicks = user.clicks;
+                        }
+                    });
+
+                    // Update current user card
+                    document.getElementById('userRank').textContent = userRank;
+                    document.getElementById('userClicks').textContent = userClicks;
+                }
+            });
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUserId = user.uid;
+                loadLeaderboard();
+            } else {
+                window.location.href = "login.html"; // Redirect to login if not authenticated
+            }
+        });
+    </script>
+</body>
+
+</html>

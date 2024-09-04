@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Reward</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #333; 
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .reward-container {
+            background: #222;
+            border-radius: 10px;
+            padding: 20px;
+            width: 300px;
+            text-align: center;
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .reward-day {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #444;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .reward-day.claimed {
+            background-color: #28a745;
+            cursor: not-allowed;
+        }
+
+        .reward-day.missed {
+            background-color: #dc3545;
+        }
+
+        .reward-day:hover:not(.claimed):not(.missed) {
+            background-color: #555;
+        }
+
+        .claim-button {
+            background-color: #28a745;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .claim-button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .claim-button:hover:not(:disabled) {
+            background-color: #218838;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="reward-container">
+        <h2>Daily Reward</h2>
+        <div id="day1" class="reward-day">Day 1</div>
+        <div id="day2" class="reward-day">Day 2</div>
+        <div id="day3" class="reward-day">Day 3</div>
+        <div id="day4" class="reward-day">Day 4</div>
+        <div id="day5" class="reward-day">Day 5</div>
+        <div id="day6" class="reward-day">Day 6</div>
+        <div id="day7" class="reward-day">Day 7</div>
+        <button id="claimButton" class="claim-button">Claim Today's Reward</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-auth.js";
+        import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-database.js";
+
+         // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyCryq8IXZV6S8yvPYVlltsSKvCHsoRzxeE",
+    authDomain: "clickdoge-f88a8.firebaseapp.com",
+    projectId: "clickdoge-f88a8",
+    storageBucket: "clickdoge-f88a8.appspot.com",
+    messagingSenderId: "962113343161",
+    appId: "1:962113343161:web:5003e98f3c77371fad1568"
+  };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        let currentDay = 0;
+        const maxDays = 7;
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                const userId = user.uid;
+                const userRef = ref(db, 'users/' + userId);
+
+                // Get user daily reward data
+                get(userRef).then((snapshot) => {
+                    if (snapshot.exists()) {
+                        const data = snapshot.val();
+                        currentDay = data.currentDay || 0;
+                        const lastClaimDate = new Date(data.lastClaimDate || 0);
+                        const today = new Date();
+
+                        if (today.getDate() !== lastClaimDate.getDate() || today.getDay() !== lastClaimDate.getDay()) {
+                            currentDay = 0; // Reset if the user missed a day
+                        }
+
+                        updateRewardDays(currentDay);
+                    }
+                });
+
+                document.getElementById('claimButton').addEventListener('click', () => {
+                    if (currentDay < maxDays) {
+                        currentDay++;
+                        const today = new Date().toISOString();
+
+                        // Update daily reward data in database
+                        update(ref(db, 'users/' + userId), {
+                            currentDay: currentDay,
+                            lastClaimDate: today
+                        });
+
+                        updateRewardDays(currentDay);
+                    }
+                });
+            } else {
+                // User is signed out
+                window.location.href = "login.html";
+            }
+        });
+
+        function updateRewardDays(day) {
+            for (let i = 1; i <= maxDays; i++) {
+                const dayElement = document.getElementById('day' + i);
+                if (i <= day) {
+                    dayElement.classList.add('claimed');
+                } else {
+                    dayElement.classList.remove('claimed');
+                    dayElement.classList.remove('missed');
+                }
+            }
+
+            document.getElementById('claimbutton').disabled = day >= maxDays;
+        }
+    </script>
+</body>
+
+</html>

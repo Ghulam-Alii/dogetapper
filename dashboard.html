@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Info box styles */
+        .info-container {
+            display: flex;
+            justify-content: space-around;
+            width: 90%;
+            margin: 10px 0;
+        }
+
+        .info-box {
+            background: linear-gradient(145deg, #1e1e1e, #2a2a2a);
+            border-radius: 10px;
+            box-shadow: 5px 5px 10px #171717, -5px -5px 10px #333;
+            padding: 20px;
+            width: 40%;
+            text-align: center;
+            transform: perspective(1000px) rotateX(10deg);
+            transition: transform 0.3s, box-shadow 0.3s;
+            font-size: 16px;
+        }
+
+        .info-box:hover {
+            transform: perspective(1000px) rotateX(0deg);
+            box-shadow: 10px 10px 20px #171717, -10px -10px 20px #333;
+        }
+
+        .info-box i {
+            margin-bottom: 10px;
+            font-size: 28px;
+            color: chartreuse;
+        }
+
+        .info-box span {
+            display: block;
+            color: #F5F5F5;
+            font-size: 18px;
+        }
+      
+    </style>
+</head>
+
+<body>
+
+    <div class="heading-container">
+        <div class="company-heading">
+            <img src="doge.webp" alt="Logo">
+            DogeTapper
+        </div>
+    </div>
+    <div class="loader" id="loader"></div>
+    <div class="dashboard hidden" id="dashboard">
+       
+
+        <button id="logout" class="btn-logout">Logout</button>
+        <div class="info-box">
+            <span>
+                <h2 id="welcomeMessage" style="color: #F5F5F5;"><i class="fas fa-user"></i> Welcome, User</h2>
+            </span>
+
+        </div>
+        <div class="info-container">
+            <p><i class=" fas fa-envelope"></i> Email: <span id="userEmail"></span></p>
+            <p><i class=" fas fa-mouse-pointer"></i> Total Clicks: <span id="clickCount">0</span>
+            </p>
+        </div>
+        <div class="click-container" id="clickableimage-container">
+            <img src="doge.webp" alt="Clickable Image" id="clickableImage">
+        </div>
+        <div id="remainingClicks"><i class="fas fa-battery-half"></i> Remaining Clicks: 0/500</div>
+        <div class="stamina-bar">
+            <div id="stamina" class="stamina"></div>
+        </div>
+        <!-- Add this inside the dashboard div -->
+
+
+
+        <!-- Secondary navigation bar -->
+        <div class="secondary-navbar">
+            <div class="nav-item active">
+                <a href="dashboard.html" class="active"><i class="fas fa-home"></i></a>
+                <span>Dashboard</span>
+            </div>
+            <div class="nav-item">
+                <a href="boost.html"><i class="fas fa-rocket"></i></a>
+                <span>Boost</span>
+            </div>
+            <div class="nav-item">
+                <a href="tasks.html"><i class="fas fa-tasks"></i></a>
+                <span>Tasks</span>
+            </div>
+
+            <div class="nav-item">
+                <a href="referrals.html"><i class="fas fa-users"></i></a>
+                <span>Referrals</span>
+            </div>
+
+            <div class="nav-item " >
+                <a href="leaderboard.html"><i class="fas fa-trophy"></i></a>
+                <span>Leaders</span>
+            </div>
+        </div>
+
+    </div>
+    </div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-auth.js";
+        import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-database.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCryq8IXZV6S8yvPYVlltsSKvCHsoRzxeE",
+            authDomain: "clickdoge-f88a8.firebaseapp.com",
+            projectId: "clickdoge-f88a8",
+            storageBucket: "clickdoge-f88a8.appspot.com",
+            messagingSenderId: "962113343161",
+            appId: "1:962113343161:web:5003e98f3c77371fad1568"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        let clickCount = 0;
+        let staminaCount = 0;
+        const maxStamina = 500; // Maximum value for stamina bar
+        let dataLoaded = false; // Flag to check if data is fully loaded
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                const userId = user.uid;
+                const userRef = ref(db, 'users/' + userId);
+
+                // Get user data from database
+                get(userRef).then((snapshot) => {
+                    if (snapshot.exists()) {
+                        const data = snapshot.val();
+                        document.getElementById('welcomeMessage').innerHTML = `<i class="fas fa-user"></i> Welcome, ${data.username}`;
+                        document.getElementById('userEmail').textContent = data.email;
+                        clickCount = data.clickCount || 0;
+                        staminaCount = data.staminaCount !== undefined ? data.staminaCount : maxStamina; // Retrieve stamina count from database or initialize to maxStamina if not found
+                        document.getElementById('clickCount').textContent = formatNumber(clickCount);
+                        updateStaminaBar(staminaCount);
+                        updateRemainingClicks(staminaCount);
+                        dataLoaded = true; // Set dataLoaded flag to true once data is fully loaded
+
+                        // Hide the loader and show the dashboard
+                        document.getElementById('loader').classList.add('hidden');
+                        document.getElementById('dashboard').classList.remove('hidden');
+                    }
+                });
+
+                // Add click event listener to image
+                const clickableImage = document.getElementById('clickableImage');
+
+                clickableImage.addEventListener('click', handleImageClick);
+                clickableImage.addEventListener('touchstart', handleImageClick);
+
+                function handleImageClick(event) {
+                    if (staminaCount > 0 && dataLoaded) {
+                        const clickPositions = [];
+                        if (event.type === 'click') {
+                            clickPositions.push({ x: event.offsetX, y: event.offsetY });
+                        } else if (event.type === 'touchstart') {
+                            for (let i = 0; i < event.touches.length; i++) {
+                                const touch = event.touches[i];
+                                const rect = event.target.getBoundingClientRect();
+                                clickPositions.push({
+                                    x: touch.clientX - rect.left,
+                                    y: touch.clientY - rect.top
+                                });
+                            }
+                        }
+
+                        clickPositions.forEach(pos => {
+                            clickCount++;
+                            staminaCount--;
+                            document.getElementById('clickCount').textContent = formatNumber(clickCount);
+                            updateStaminaBar(staminaCount);
+                            updateRemainingClicks(staminaCount);
+
+                            // Update click count and stamina count in database
+                            update(ref(db, 'users/' + userId), {
+                                clickCount: clickCount,
+                                staminaCount: staminaCount
+                            });
+
+                            // Show "+1" animation at click position
+                            const plusOne = document.createElement('div');
+                            plusOne.className = 'plus-one';
+                            plusOne.textContent = '+1';
+                            plusOne.style.left = `${pos.x}px`;
+                            plusOne.style.top = `${pos.y}px`;
+                            clickableImage.parentElement.appendChild(plusOne);
+
+                            setTimeout(() => {
+                                plusOne.remove();
+                            }, 3000); // 3000ms matches the duration of the moveUp animation
+                        });
+
+                        // Add shake class to image
+                        clickableImage.classList.add('shake');
+
+                        // Remove shake class after animation duration
+                        setTimeout(() => {
+                            clickableImage.classList.remove('shake');
+                        }, 500); // 500ms matches the duration of the shake animation
+                    }
+                }
+
+                // Periodically increase stamina bar
+                setInterval(() => {
+                    if (staminaCount < maxStamina && dataLoaded) {
+                        staminaCount++;
+                        updateStaminaBar(staminaCount);
+                        updateRemainingClicks(staminaCount);
+
+                        // Update stamina count in database
+                        update(ref(db, 'users/' + userId), {
+                            staminaCount: staminaCount
+                        });
+                    }
+                }, 2000); // 2000 milliseconds = 2 seconds for increasing stamina
+            } else {
+                // User is signed out
+                window.location.href = "login.html"; // Redirect to login page if user is not authenticated
+            }
+        });
+
+        // Update stamina bar width
+        function updateStaminaBar(stamina) {
+            const staminaBar = document.getElementById('stamina');
+            const percentage = (stamina / maxStamina) * 100;
+            staminaBar.style.width = percentage + '%';
+
+            if (percentage > 70) {
+                staminaBar.style.backgroundColor = 'chartreuse';
+            } else if (percentage > 30) {
+                staminaBar.style.backgroundColor = 'orange';
+            } else {
+                staminaBar.style.backgroundColor = 'red';
+            }
+        }
+
+        // Update remaining clicks text
+        function updateRemainingClicks(stamina) {
+            document.getElementById('remainingClicks').innerHTML = `<i class="fas fa-battery-half"></i> Remaining Clicks: ${stamina}/${maxStamina}`;
+        }
+
+        // Format number with commas
+        function formatNumber(number) {
+            return number.toLocaleString();
+        }
+
+        // Logout button click event
+        document.getElementById('logout').addEventListener('click', () => {
+            signOut(auth).then(() => {
+                window.location.href = "login.html"; // Redirect to login page on logout
+            }).catch((error) => {
+                console.error('Error signing out: ', error);
+            });
+        });
+    </script>
+    <script>function handleImageClick(event) {
+            if (staminaCount > 0 && dataLoaded) {
+                const clickPositions = [];
+                if (event.type === 'click') {
+                    clickPositions.push({ x: event.offsetX, y: event.offsetY });
+                } else if (event.type === 'touchstart') {
+                    for (let i = 0; i < event.touches.length; i++) {
+                        const touch = event.touches[i];
+                        const rect = event.target.getBoundingClientRect();
+                        clickPositions.push({
+                            x: touch.clientX - rect.left,
+                            y: touch.clientY - rect.top
+                        });
+                    }
+                }
+
+                clickPositions.forEach(pos => {
+                    clickCount++;
+                    staminaCount--;
+                    document.getElementById('clickCount').textContent = formatNumber(clickCount);
+                    updateStaminaBar(staminaCount);
+                    updateRemainingClicks(staminaCount);
+
+                    // Update click count and stamina count in database
+                    update(ref(db, 'users/' + userId), {
+                        clickCount: clickCount,
+                        staminaCount: staminaCount
+                    });
+
+                    // Show "+1" animation at click position
+                    const plusOne = document.createElement('div');
+                    plusOne.className = 'plus-one';
+                    plusOne.textContent = '+1';
+                    plusOne.style.left = `${pos.x}px`;
+                    plusOne.style.top = `${pos.y}px`;
+                    clickableImage.parentElement.appendChild(plusOne);
+
+                    setTimeout(() => {
+                        plusOne.remove();
+                    }, 3000); // 3000ms matches the duration of the moveUp animation
+
+                    // Create and append ripple effect
+                    const ripple = document.createElement('div');
+                    ripple.className = 'ripple';
+                    ripple.style.width = ripple.style.height = `${clickableImage.clientWidth * 2}px`;
+                    ripple.style.left = `${pos.x - ripple.clientWidth / 2}px`;
+                    ripple.style.top = `${pos.y - ripple.clientHeight / 2}px`;
+                    clickableImage.parentElement.appendChild(ripple);
+
+                    setTimeout(() => {
+                        ripple.remove();
+                    }, 600); // Duration matches ripple animation time
+
+                    // Add shake class to image
+                    clickableImage.classList.add('shake');
+
+                    // Remove shake class after animation duration
+                    setTimeout(() => {
+                        clickableImage.classList.remove('shake');
+                    }, 500); // 500ms matches the duration of the shake animation
+                });
+            }
+        }
+    </script>
+</body>
+
+</html>

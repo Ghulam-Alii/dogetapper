@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boost</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        /* General styles */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #121212;
+            color: #fff;
+            font-family: Arial, sans-serif;
+        }
+
+
+
+        .company-heading {
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            visibility: hidden;
+        }
+
+        /* Dashboard styling */
+        .dashboard {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px;
+        }
+
+        /* Info box styles */
+        .info-container {
+            display: flex;
+            justify-content: space-around;
+            width: 90%;
+            margin: 10px 0;
+        }
+
+        .info-box {
+            background: linear-gradient(145deg, #1e1e1e, #2a2a2a);
+            border-radius: 10px;
+            box-shadow: 5px 5px 10px #171717, -5px -5px 10px #333;
+            padding: 20px;
+            width: 40%;
+            text-align: center;
+            transform: perspective(1000px) rotateX(10deg);
+            transition: transform 0.3s, box-shadow 0.3s;
+            font-size: 16px;
+        }
+
+        .info-box:hover {
+            transform: perspective(1000px) rotateX(0deg);
+            box-shadow: 10px 10px 20px #171717, -10px -10px 20px #333;
+        }
+
+        .info-box i {
+            margin-bottom: 10px;
+            font-size: 28px;
+            color: chartreuse;
+        }
+
+        .info-box span {
+            display: block;
+            color: #F5F5F5;
+            font-size: 18px;
+        }
+
+        /* Boost container and items */
+        .boost-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            width: 100%;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .boost-item {
+            background: linear-gradient(145deg, #1e1e1e, #2a2a2a);
+            border-radius: 10px;
+            box-shadow: 5px 5px 10px #171717, -5px -5px 10px #333;
+            padding: 20px;
+            margin: 10px;
+            width: 45%;
+            text-align: center;
+            transform: perspective(1000px) rotateX(10deg);
+            transition: transform 0.3s, box-shadow 0.3s;
+            font-size: 16px;
+        }
+
+        .boost-item:hover {
+            transform: perspective(1000px) rotateX(0deg);
+            box-shadow: 10px 10px 20px #171717, -10px -10px 20px #333;
+        }
+
+        .boost-item button {
+            padding: 10px 15px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: chartreuse;
+            color: black;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        /* Notification box */
+        .notification {
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+            z-index: 1000;
+            text-align: center;
+        }
+
+        .notification button {
+            margin-top: 10px;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: chartreuse;
+            color: black;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="heading-container">
+        <div class="company-heading">
+            <img src="doge.webp" alt="Logo">
+            DogeTapper
+        </div>
+    </div>
+    <div id="loader" class="loader"></div>
+    <div class="dashboard hidden" id="dashboard">
+        <button id="logout" class="btn-logout">Logout</button>
+        <h2 id="welcomeMessage" class="info-box"><i class="fas fa-user"></i> Welcome, User</h2>
+        <div class="info-container">
+            <div class="info-container">
+                <p><i class=" fas fa-envelope"></i> Email: <span id="userEmail"></span></p>
+                <p><i class=" fas fa-mouse-pointer"></i> Total Clicks: <span id="clickCount">0</span>
+                </p>
+            </div>
+        </div>
+
+        <div class="boost-container">
+            <h3 style="color: chartreuse;">Boost Your Abilities</h3>
+            <div class="boost-item">
+                <span style="color: chartreuse;">Increase Remaining Clicks</span><br>
+                <button id="increaseRemainingClicks">Upgrade (Cost: <span id="remainingClicksCost">20000</span>
+                    clicks)</button>
+                <br><span style="color: chartreuse;">Level: <span id="remainingClicksLevel">0</span>/5</span>
+            </div>
+            <div class="boost-item">
+                <span style="color: chartreuse;">Refill Timings</span><br>
+                <button id="increaseRefillTimings">Upgrade (Cost: <span id="refillTimingsCost">20000</span>
+                    clicks)</button>
+                <br><span style="color: chartreuse;">Level: <span id="refillTimingsLevel">0</span>/5</span>
+            </div>
+            <div class="boost-item">
+                <span style="color: chartreuse;">Stamina Bar Limit</span><br>
+                <button id="increaseStaminaBarLimit">Upgrade (Cost: <span id="staminaBarLimitCost">20000</span>
+                    clicks)</button>
+                <br><span style="color: chartreuse;">Level: <span id="staminaBarLimitLevel">0</span>/5</span>
+            </div>
+            <div class="boost-item">
+                <span style="color: chartreuse;">Total Clicks per Click</span><br>
+                <button id="increaseTotalClicksPerClick">Upgrade (Cost: <span id="totalClicksPerClickCost">20000</span>
+                    clicks)</button>
+                <br><span style="color: chartreuse;">Level: <span id="totalClicksPerClickLevel">0</span>/5</span>
+            </div>
+        </div>
+
+        <!-- Secondary navigation bar -->
+        <div class="secondary-navbar">
+            <div class="nav-item">
+                <a href="dashboard.html"><i class="fas fa-home"></i></a>
+                <span>Dashboard</span>
+            </div>
+            <div class="nav-item active">
+                <a href="boost.html"><i class="fas fa-rocket"></i></a>
+                <span>Boost</span>
+            </div>
+            <div class="nav-item">
+                <a href="tasks.html"><i class="fas fa-tasks"></i></a>
+                <span>Tasks</span>
+            </div>
+           
+            <div class="nav-item">
+                <a href="referrals.html"><i class="fas fa-user-friends"></i></a>
+                <span>Referrals</span>
+            </div>
+            <div class="nav-item " >
+                <a href="leaderboard.html"><i class="fas fa-trophy"></i></a>
+                <span>Leaders</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">
+        <p id="notificationMessage">Notification</p>
+        <button id="closeNotification">Close</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-auth.js";
+        import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-database.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCryq8IXZV6S8yvPYVlltsSKvCHsoRzxeE",
+            authDomain: "clickdoge-f88a8.firebaseapp.com",
+            projectId: "clickdoge-f88a8",
+            storageBucket: "clickdoge-f88a8.appspot.com",
+            messagingSenderId: "962113343161",
+            appId: "1:962113343161:web:5003e98f3c77371fad1568"
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        let clickCount = 0;
+        let staminaCount = 0;
+        const maxStamina = 500;
+        let dataLoaded = false;
+        let userId = '';
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                userId = user.uid;
+                
+                // Hide the loader and show the dashboard
+                document.getElementById('loader').classList.add('hidden');
+                document.getElementById('dashboard').classList.remove('hidden');
+
+
+                const userRef = ref(db, 'users/' + userId);
+
+                get(userRef).then((snapshot) => {
+                    if (snapshot.exists()) {
+                        const data = snapshot.val();
+                        document.getElementById('welcomeMessage').innerHTML = `<i class="fas fa-user"></i> Welcome, ${data.username}`;
+                        document.getElementById('userEmail').textContent = data.email;
+                        clickCount = data.clickCount || 0;
+                        staminaCount = data.staminaCount !== undefined ? data.staminaCount : maxStamina;
+                        document.getElementById('clickCount').textContent = formatNumber(clickCount);
+                        updateStaminaBar(staminaCount);
+                        loadAbilityLevels(userId);
+                        dataLoaded = true;
+
+                        document.getElementById('loader').classList.add('hidden');
+                        document.getElementById('dashboard').classList.remove('hidden');
+                    }
+                }).catch((error) => {
+                    console.error('Error fetching user data:', error);
+                });
+
+                document.getElementById('logout').addEventListener('click', function () {
+                    const user = auth.currentUser;
+                    if (user) {
+                        const userRef = ref(db, 'users/' + user.uid);
+                        update(userRef, { clickCount: clickCount, staminaCount: staminaCount }).then(() => {
+                            signOut(auth).then(() => {
+                                window.location.href = 'login.html';
+                            }).catch((error) => {
+                                console.error('Error signing out:', error);
+                            });
+                        }).catch((error) => {
+                            console.error('Error updating user data:', error);
+                        });
+                    }
+                });
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+
+        function formatNumber(number) {
+            return number.toLocaleString();
+        }
+
+        function loadAbilityLevels(userId) {
+            const abilities = ['remainingClicks', 'refillTimings', 'staminaBarLimit', 'totalClicksPerClick'];
+            abilities.forEach((ability) => {
+                const abilityRef = ref(db, 'users/' + userId + '/' + ability);
+                get(abilityRef).then((snapshot) => {
+                    if (snapshot.exists()) {
+                        const level = snapshot.val();
+                        document.getElementById(`${ability}Level`).textContent = level;
+                    } else {
+                        document.getElementById(`${ability}Level`).textContent = '0';
+                    }
+                }).catch((error) => {
+                    console.error('Error fetching ability levels:', error);
+                });
+            });
+        }
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            const notificationMessage = document.getElementById('notificationMessage');
+            notificationMessage.textContent = message;
+            notification.style.display = 'block';
+        }
+
+        document.getElementById('closeNotification').addEventListener('click', () => {
+            document.getElementById('notification').style.display = 'none';
+        });
+
+        document.getElementById('increaseRemainingClicks').addEventListener('click', () => {
+            upgradeAbility('remainingClicks', 20000);
+        });
+
+        document.getElementById('increaseRefillTimings').addEventListener('click', () => {
+            upgradeAbility('refillTimings', 20000);
+        });
+
+        document.getElementById('increaseStaminaBarLimit').addEventListener('click', () => {
+            upgradeAbility('staminaBarLimit', 20000);
+        });
+
+        document.getElementById('increaseTotalClicksPerClick').addEventListener('click', () => {
+            upgradeAbility('totalClicksPerClick', 20000);
+        });
+
+        function upgradeAbility(ability, cost) {
+            if (clickCount >= cost) {
+                clickCount -= cost;
+                const abilityRef = ref(db, 'users/' + userId + '/' + ability);
+                get(abilityRef).then((snapshot) => {
+                    let currentLevel = 0;
+                    if (snapshot.exists()) {
+                        currentLevel = snapshot.val();
+                    }
+                    if (currentLevel < 5) {
+                        currentLevel += 1;
+                        update(abilityRef, currentLevel).then(() => {
+                            document.getElementById(`${ability}Level`).textContent = currentLevel;
+                            document.getElementById('clickCount').textContent = formatNumber(clickCount);
+                        }).catch((error) => {
+                            console.error('Error updating ability level:', error);
+                        });
+                    } else {
+                        showNotification('Maximum level reached for this ability.');
+                    }
+                }).catch((error) => {
+                    console.error('Error fetching ability level:', error);
+                });
+            } else {
+                showNotification('Not enough clicks to upgrade.');
+            }
+        }
+
+    </script>
+</body>
+
+</html>

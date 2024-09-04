@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tasks</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        /* Modern styles for task page */
+
+        .tasks-page {
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .tasks-page h2 {
+            font-size: 28px;
+            color: #343a40;
+            margin-bottom: 20px;
+        }
+
+        .task-list {
+            list-style: none;
+            padding: 0;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .task-item {
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            position: relative;
+            transition: transform 0.3s;
+        }
+
+        .task-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .task-label {
+            font-size: 18px;
+            color: #343a40;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .complete-button,
+        #hiddenCodeInput {
+            width: 100%;
+            padding: 10px 15px;
+            border-radius: 25px;
+            border: 2px solid #343a40;
+            outline: none;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .complete-button {
+            background: #343a40;
+            color: #fff;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        .complete-button:hover {
+            background: #495057;
+        }
+
+        #hiddenCodeInput {
+            border: 2px solid #ced4da;
+            margin-bottom: 10px;
+            color: #495057;
+            background: #fff;
+        }
+
+        #hiddenCodeInput:focus {
+            border-color: #343a40;
+            background: #e9ecef;
+        }
+
+        .completed {
+            background: #28a745 !important;
+            color: white;
+            cursor: default;
+        }
+
+        /* 3D Box Effect */
+        .task-item::before {
+            content: "";
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            width: calc(100% + 20px);
+            height: calc(100% + 20px);
+            background: #e9ecef;
+            border-radius: 15px;
+            z-index: -1;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s;
+        }
+
+        
+
+        /* Modal styling */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1001;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            max-width: 400px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .modal-content {
+            position: relative;
+            font-size: 18px;
+            color: #343a40;
+        }
+
+        .modal .close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            color: #343a40;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="heading-container">
+        <div class="company-heading">
+            <img src="doge.webp" alt="Logo">
+            DogeTapper
+        </div>
+
+    </div>
+    <div id="loader" class="loader"></div>
+<div class="dashboard hidden" id="dashboard">
+    <div class="tasks-page" id="tasks-page">
+        <h2 style="color: white;">Tasks</h2>
+        <ul class="task-list">
+            <li class="task-item">
+                <a href="https://www.youtube.com/@dogetapper" target="_blank"><label class="task-label">Subscribe to
+                        YouTube Channel</label></a>
+                <button class="complete-button" data-task-id="task1"
+                    onclick="completeTask(this, 'https://www.youtube.com/@dogetapper')">Complete</button>
+            </li>
+            <li class="task-item">
+                <a href="https://t.me/dogetapper" target="_blank"><label class="task-label">Join Telegram Channel</label></a>
+                <button class="complete-button" data-task-id="task2"
+                    onclick="completeTask(this, 'https://t.me/dogetapper')">Complete</button>
+            </li>
+            <!-- <li class="task-item">
+                <a href="https://YOUTUBE.com/@CodeOxide" target="_blank"> <label class="task-label">Find the hidden code
+                        in the YouTube video and enter it below:</label></a>
+                <input type="text" id="hiddenCodeInput" placeholder="Enter hidden code">
+                <button class="complete-button" data-task-id="task3" onclick="verifyHiddenCode(this)">Submit</button>
+            </li> -->
+        </ul>
+    </div>
+
+    <!-- Secondary navigation bar -->
+    <div class="secondary-navbar">
+        <div class="nav-item">
+            <a href="dashboard.html"><i class="fas fa-home"></i></a>
+            <span>Dashboard</span>
+        </div>
+        <div class="nav-item">
+            <a href="boost.html"><i class="fas fa-rocket"></i></a>
+            <span>Boost</span>
+        </div>
+        <div class="nav-item active">
+            <a href="tasks.html" class="active"><i class="fas fa-tasks"></i></a>
+            <span>Tasks</span>
+        </div>
+       
+        <div class="nav-item">
+            <a href="referrals.html"><i class="fas fa-user-friends"></i></a>
+            <span>Referrals</span>
+        </div>
+        <div class="nav-item " >
+            <a href="leaderboard.html"><i class="fas fa-trophy"></i></a>
+            <span>Leaders</span>
+        </div>
+    </div>
+
+    <!-- Task completion modal -->
+    <div id="taskModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <p>Congratulations! You have successfully completed the task and +2000 clicks have been added to your
+                account.</p>
+        </div>
+    </div>
+
+    <div id="taskModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <p>Congratulations! You have successfully completed the task and +2000 clicks have been added to your
+                account.</p>
+        </div>
+    </div>
+</div>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-auth.js";
+    import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-database.js";
+
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyCryq8IXZV6S8yvPYVlltsSKvCHsoRzxeE",
+        authDomain: "clickdoge-f88a8.firebaseapp.com",
+        databaseURL: "https://clickdoge-f88a8-default-rtdb.firebaseio.com",
+        projectId: "clickdoge-f88a8",
+        storageBucket: "clickdoge-f88a8.appspot.com",
+        messagingSenderId: "962113343161",
+        appId: "1:962113343161:web:5003e98f3c77371fad1568"
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    let currentUserId = null;
+
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            currentUserId = user.uid;
+            
+           // Hide the loader and show the dashboard
+           document.getElementById('loader').classList.add('hidden');
+                document.getElementById('dashboard').classList.remove('hidden');
+
+            checkTaskStatus();
+        } else {
+            window.location.href = 'login.html';
+        }
+    });
+
+    async function checkTaskStatus() {
+        if (!currentUserId) {
+            return;
+        }
+
+        const userRef = ref(db, 'users/' + currentUserId + '/tasks');
+        const snapshot = await get(userRef);
+
+        if (snapshot.exists()) {
+            const tasks = snapshot.val();
+            document.querySelectorAll('.complete-button').forEach(button => {
+                const taskId = button.getAttribute('data-task-id');
+                if (tasks[taskId] && tasks[taskId].completed) {
+                    button.disabled = true;
+                    button.classList.add('completed');
+                    button.textContent = 'Completed';
+                }
+            });
+        }
+    }
+
+    window.completeTask = function (button, url) {
+        if (!currentUserId) {
+            console.error("User not logged in");
+            return;
+        }
+
+        const taskId = button.getAttribute('data-task-id');
+        disableButtonWithTimer(button, 10, () => {
+            const loader = document.createElement('div');
+            loader.classList.add('loader');
+            button.appendChild(loader);
+
+            setTimeout(() => {
+                const userRef = ref(db, 'users/' + currentUserId);
+                get(userRef).then(snapshot => {
+                    if (snapshot.exists()) {
+                        const userData = snapshot.val();
+                        const currentClicks = userData.clickCount || 0;
+                        const updatedClicks = currentClicks + 2000;
+
+                        const updates = {};
+                        updates['clickCount'] = updatedClicks;
+                        updates[`tasks/${taskId}/completed`] = true;
+
+                        return update(userRef, updates);
+                    } else {
+                        console.error("User data does not exist.");
+                    }
+                }).then(() => {
+                    button.disabled = true;
+                    button.removeChild(loader);
+                    button.classList.add('completed');
+                    button.innerHTML = 'Completed';
+                    window.open(url, '_blank');
+                    showModal();
+                }).catch(error => {
+                    console.error('Error updating clicks:', error);
+                    button.disabled = false;
+                    button.removeChild(loader);
+                });
+            }, 10000);
+        });
+    }
+
+    function disableButtonWithTimer(button, seconds, callback) {
+        button.disabled = true;
+        button.textContent = `Please try again after ${seconds} seconds`;
+        let countdown = seconds;
+
+        const interval = setInterval(() => {
+            countdown--;
+            button.textContent = `Please try again after ${countdown} seconds`;
+            if (countdown <= 0) {
+                clearInterval(interval);
+                button.disabled = false;
+                button.textContent = 'Complete';
+                if (callback) callback();
+            }
+        }, 1000);
+    }
+
+    window.verifyHiddenCode = function (button) {
+        const hiddenCodeInput = document.getElementById('hiddenCodeInput').value;
+        const correctCode = "YOUR_HIDDEN_CODE";
+
+        if (!currentUserId) {
+            console.error("User not logged in");
+            return;
+        }
+
+        if (hiddenCodeInput === correctCode) {
+            const taskId = button.getAttribute('data-task-id');
+            const userRef = ref(db, 'users/' + currentUserId);
+            get(userRef).then(snapshot => {
+                if (snapshot.exists()) {
+                    const userData = snapshot.val();
+                    const currentClicks = userData.clickCount || 0;
+                    const updatedClicks = currentClicks + 2000;
+
+                    const updates = {};
+                    updates['clickCount'] = updatedClicks;
+                    updates[`tasks/${taskId}/completed`] = true;
+
+                    return update(userRef, updates);
+                } else {
+                    console.error("User data does not exist.");
+                }
+            }).then(() => {
+                button.disabled = true;
+                button.classList.add('completed');
+                button.textContent = 'Completed';
+                showModal();
+            }).catch(error => {
+                console.error('Error updating clicks:', error);
+            });
+        } else {
+            alert('Incorrect code. Please wait 10 seconds before trying again.');
+            disableButtonWithTimer(button, 10);
+        }
+    }
+
+    function showModal() {
+        const modal = document.getElementById('taskModal');
+        modal.style.display = 'block';
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 3000);
+    }
+
+    function closeModal() {
+        const modal = document.getElementById('taskModal');
+        modal.style.display = 'none';
+    }
+</script>
+
+</body>
+
+</html>
